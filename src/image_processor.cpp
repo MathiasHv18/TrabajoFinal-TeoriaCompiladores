@@ -5,6 +5,10 @@
 #include <fstream>
 #include <stdexcept>
 #include <antlr4-runtime.h>
+#include <llvm/Support/TargetSelect.h>
+#include <llvm/ExecutionEngine/ExecutionEngine.h>
+#include <llvm/ExecutionEngine/MCJIT.h>
+#include <llvm/ExecutionEngine/SectionMemoryManager.h>
 
 void ImageProcessor::loadImage(const std::string& path, const std::string& name) {
     cv::Mat image = cv::imread(path, cv::IMREAD_COLOR);
@@ -71,25 +75,34 @@ void ImageProcessor::transform(const std::string& name, const std::string& trans
 }
 
 void ImageProcessor::processScript(const std::string& scriptPath) {
-    // Crear una instancia de LLVMCodeGenerator
     LLVMCodeGenerator codeGenerator;
-
-    // Leer el archivo de entrada
-    std::ifstream stream(scriptPath);
-    if (!stream.is_open()) {
-        throw std::runtime_error("Failed to open script file: " + scriptPath);
+    codeGenerator.generateCode(scriptPath);
+    
+    llvm::InitializeNativeTarget();
+    llvm::InitializeNativeTargetAsmPrinter();
+    llvm::InitializeNativeTargetAsmParser();
+    
+    std::string errStr;
+    std::unique_ptr<llvm::Module> module = codeGenerator.takeModule();
+    if (!module) {
+        throw std::runtime_error("Failed to get module from code generator");
     }
-
-    // Configurar ANTLR
-    antlr4::ANTLRInputStream input(stream);
-    ImageProcessingLexer lexer(&input);
-    antlr4::CommonTokenStream tokens(&lexer);
-    ImageProcessingParser parser(&tokens);
-
-    // Generar el árbol de análisis
-    antlr4::tree::ParseTree* tree = parser.program();
-
-    // Configurar y usar el Visitor personalizado
-    ImageProcessingCustomVisitor visitor(&codeGenerator); // Pasa el puntero a LLVMCodeGenerator
-    visitor.visit(tree);
+    
+    llvm::ExecutionEngine *engine = llvm::EngineBuilder(std::move(module))
+        .setErrorStr(&errStr)
+        .setEngineKind(llvm::EngineKind::JIT)
+        .create();
+        
+    if (!engine) {
+        throw std::runtime_error("Failed to create ExecutionEngine: " + errStr);
+    }
+    
+    engine->finalizeObject();
+    llvm::Function *mainFunc = engine->FindFunctionNamed("main");
+    if (!mainFunc) {
+        throw std::runtime_error("Main function not found in the module");
+    }
+    engine->runFunctionAsMain(mainFunc, {}, nullptr);
+    
+    delete engine;
 }

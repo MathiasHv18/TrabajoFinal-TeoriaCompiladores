@@ -1,4 +1,6 @@
-load "../cocodrile.jpg" as img;
+load "crocodile.jpg" as img;
 img.filter(grayscale);
+img.filter(edgeDetection);
+img.filter(blur);
 img.rotate(45);
 save img to "output.jpg";

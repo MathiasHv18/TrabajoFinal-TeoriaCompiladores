@@ -2,18 +2,22 @@
 #include <opencv2/opencv.hpp>
 #include <unordered_map>
 #include <stdexcept>
+#include <iostream>
 
 static std::unordered_map<std::string, cv::Mat> images;
 
-void loadImage(const char* path, const char* name) {
+extern "C" void loadImageExternal(const char* path, const char* name) {
+    std::cout << "Loading image: " << path << " as " << name << std::endl; 
     cv::Mat image = cv::imread(path, cv::IMREAD_COLOR);
     if (image.empty()) {
         throw std::runtime_error("Failed to load image: " + std::string(path));
     }
     images[name] = image;
+    std::cout << "Image loaded successfully: " << name << std::endl; 
 }
 
-void saveImage(const char* name, const char* path) {
+extern "C" void saveImageExternal(const char* name, const char* path) {
+    std::cout << "Saving image: " << name << " to " << path << std::endl; 
     auto it = images.find(name);
     if (it == images.end()) {
         throw std::runtime_error("Image not found: " + std::string(name));
@@ -21,9 +25,11 @@ void saveImage(const char* name, const char* path) {
     if (!cv::imwrite(path, it->second)) {
         throw std::runtime_error("Failed to save image: " + std::string(path));
     }
+    std::cout << "Image saved successfully: " << path << std::endl; 
 }
 
-void applyFilter(const char* name, const char* filterType) {
+extern "C" void applyFilterExternal(const char* name, const char* filterType) {
+    std::cout << "Applying filter: " << filterType << " to " << name << std::endl;
     auto it = images.find(name);
     if (it == images.end()) {
         throw std::runtime_error("Image not found: " + std::string(name));
@@ -44,9 +50,11 @@ void applyFilter(const char* name, const char* filterType) {
     } else {
         throw std::runtime_error("Unknown filter type: " + std::string(filterType));
     }
+    std::cout << "Filter applied successfully: " << filterType << std::endl; 
 }
 
-void transform(const char* name, const char* transformType, double value) {
+extern "C" void transformExternal(const char* name, const char* transformType, double value) {
+    std::cout << "Transforming image: " << name << " with " << transformType << " value: " << value << std::endl;
     auto it = images.find(name);
     if (it == images.end()) {
         throw std::runtime_error("Image not found: " + std::string(name));
@@ -67,4 +75,5 @@ void transform(const char* name, const char* transformType, double value) {
     } else {
         throw std::runtime_error("Unknown transformation type: " + std::string(transformType));
     }
+    std::cout << "Transformation applied successfully: " << transformType << std::endl; 
 }

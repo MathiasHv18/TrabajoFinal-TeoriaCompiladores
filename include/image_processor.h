@@ -11,7 +11,7 @@ public:
     void saveImage(const std::string& name, const std::string& path);
     void applyFilter(const std::string& name, const std::string& filterType);
     void transform(const std::string& name, const std::string& transformType, double value);
-    void processScript(const std::string& scriptPath); // Asegúrate de declarar esta función
+    void processScript(const std::string& scriptPath);
 
 private:
     std::unordered_map<std::string, cv::Mat> images;
