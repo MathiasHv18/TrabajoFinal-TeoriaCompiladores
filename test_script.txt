@@ -1,0 +1,4 @@
+load "../cocodrile.jpg" as img;
+img.filter(grayscale);
+img.rotate(45);
+save img to "output.jpg";
