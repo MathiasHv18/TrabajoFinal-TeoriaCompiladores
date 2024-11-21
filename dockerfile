@@ -14,35 +14,46 @@ RUN apt-get update && apt-get install -y \
     wget \
     curl \
     pkg-config \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install OpenCV dependencies
-RUN apt-get update && apt-get install -y \
+    llvm \
+    clang \
+    antlr4 \
     libopencv-dev \
-    python3-opencv \
+    git \
+    libgtk-3-dev \
+    zlib1g-dev \
+    libssl-dev \
+    libutfcpp-dev \
+    dos2unix \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
-RUN pip3 install --no-cache-dir \
-    antlr4-python3-runtime==4.13.2 \
-    numpy \
-    opencv-python
+# Set up environment variables for LLVM
+ENV LLVM_DIR=/usr/lib/llvm-14
+ENV PATH=$LLVM_DIR/bin:$PATH
+ENV LD_LIBRARY_PATH=$LLVM_DIR/lib:$LD_LIBRARY_PATH
 
-# Download ANTLR
-RUN wget https://www.antlr.org/download/antlr-4.13.2-complete.jar -P /usr/local/lib/
+# Install Python packages
+RUN pip3 install antlr4-python3-runtime
 
-# Set up ANTLR environment variables
+# Descargar ANTLR jar
+RUN curl -o /usr/local/lib/antlr-4.13.2-complete.jar https://www.antlr.org/download/antlr-4.13.2-complete.jar
+
+# Establecer variables de entorno para ANTLR
 ENV CLASSPATH="/usr/local/lib/antlr-4.13.2-complete.jar:$CLASSPATH"
-ENV ANTLR_JAR="/usr/local/lib/antlr-4.13.2-complete.jar"
+RUN echo 'alias antlr4="java -jar /usr/local/lib/antlr-4.13.2-complete.jar"' >> ~/.bashrc
 
-# Create workspace directory
+# Instalar ANTLR4 C++ runtime
+RUN git clone https://github.com/antlr/antlr4.git /tmp/antlr4 \
+    && cd /tmp/antlr4/runtime/Cpp \
+    && mkdir build && cd build \
+    && cmake .. \
+    && make \
+    && make install \
+    && ldconfig \
+    && rm -rf /tmp/antlr4
+
+# Copy the project files
+COPY . /app
 WORKDIR /app
 
-# Copy grammar file and source code
-COPY . /app/
-
-# Generate ANTLR parser
-RUN java -jar /usr/local/lib/antlr-4.13.2-complete.jar -Dlanguage=Python3 ImageProcessing.g4
-
-# Default command
-CMD ["python3"]
+# Establecer el comando por defecto a bash
+CMD ["/bin/bash"]
