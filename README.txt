@@ -1,5 +1,7 @@
+abrir terminal en la ruta del proyecto y ejecutar los siguientes comandos:
+
 docker build -t trabajofinal .
 
-docker run -it -v 'C:\Users\faboa\Documents\GitHub\TrabajoFinal-TeoriaCompiladores:/app' trabajofinal
+docker run -it -v 'TrabajoFinal-TeoriaCompiladores:/app' trabajofinal
 
 ./app.sh

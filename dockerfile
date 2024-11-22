@@ -47,6 +47,7 @@ COPY . /app
 WORKDIR /app
 
 RUN chmod +x app.sh
+RUN dos2unix app.sh
 
 VOLUME ["/app"]
 
