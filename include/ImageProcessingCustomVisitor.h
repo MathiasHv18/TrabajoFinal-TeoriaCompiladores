@@ -29,7 +29,6 @@ public:
         }
         std::string path = ctx->STRING()->getText();
         std::string name = ctx->ID()->getText();
-        // Remover comillas y verificar que la cadena no esté vacía
         path = path.substr(1, path.size() - 2);
         if (path.empty() || name.empty()) {
             throw std::runtime_error("Path or name cannot be empty");
