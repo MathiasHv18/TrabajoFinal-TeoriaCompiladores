@@ -7,10 +7,11 @@ cp *.jpg build/
 cd build
 
 cmake ..
-
 make -j$(nproc)
 
-./ImageProcessingLanguage ../tests/*.txt
+for script in ../tests/*.txt; do
+    ./ImageProcessingLanguage "$script"
+done
 
 clang -o output output.ll ../src/external_functions.cpp \
     -I../include -I/usr/include/opencv4 \

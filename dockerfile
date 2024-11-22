@@ -46,6 +46,8 @@ RUN git clone https://github.com/antlr/antlr4.git /tmp/antlr4 \
 COPY . /app
 WORKDIR /app
 
+RUN chmod +x app.sh
+
 VOLUME ["/app"]
 
 CMD ["/bin/bash"]
