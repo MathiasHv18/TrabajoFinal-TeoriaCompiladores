@@ -8,8 +8,11 @@ Ejemplo:
 
 docker run -it -v 'C:\Users\faboa\Documents\GitHub\TrabajoFinal-TeoriaCompiladores:/app' trabajofinal
 
-./app.sh
+ejecutar:
 
+dos2unix app.sh
+y luego
+./app.sh
 
 Recomendaciones:
 
